@@ -1,0 +1,19 @@
+version: '3'
+services:
+  app:
+    build: .
+    env_file:
+      - app.env
+      - s3.env
+      - swift.env
+    links:
+      - rabbitmq:rabbitmq.host
+    volumes:
+      - .:/opt/app-root/src:z
+  rabbitmq:
+    hostname: rabbitmq.host
+    container_name: rabbitmq
+    image: rabbitmq:3.5-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
