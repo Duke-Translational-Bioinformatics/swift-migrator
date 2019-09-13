@@ -1,3 +1,4 @@
 .bundle
 *nocommit*
 .bash_history
+.rspec
