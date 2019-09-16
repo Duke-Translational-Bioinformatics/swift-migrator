@@ -5,6 +5,9 @@ class MigrationException < StandardError
 end
 
 class SwiftMigrationManager
+  # mainly for rspec introspection
+  attr_reader :swift, :s3, :manifest, :multipart_upload
+
   def initialize(container, object)
     @container = container
     @object = object
@@ -19,7 +22,7 @@ class SwiftMigrationManager
   end
 
   def is_migrated?
-    @s3.is_complete_chunked_upload?(@container, @object)
+    @s3.is_complete_multipart_upload?(@container, @object)
   end
 
   def abort_migration
@@ -38,7 +41,7 @@ class SwiftMigrationManager
       parts.each_index do |i|
         part_number = i + 1
         is_complete = part_migrated?(part_number, parts)
-        last unless is_complete
+        break unless is_complete
       end
     end
     is_complete
