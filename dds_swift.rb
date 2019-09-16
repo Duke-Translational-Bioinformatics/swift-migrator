@@ -5,6 +5,31 @@ class SwiftException < StandardError
 end
 
 class DdsSwift
+  def root_path
+    root_path = ['',
+      ENV['SWIFT_PROVIDER_VERSION'],
+      ENV['SWIFT_PROVIDER_NAME']
+    ].join('/')
+  end
+
+  def call_auth_uri
+    begin
+      @auth_uri_resp ||= HTTParty.get(
+          "#{ENV['SWIFT_PROVIDER_URL_ROOT']}#{ENV['SWIFT_PROVIDER_AUTH_URI']}",
+          headers: {
+            'X-Auth-User' => ENV['SWIFT_USER'],
+            'X-Auth-Key' => ENV['SWIFT_PASS']
+          }
+      )
+    rescue Exception => e
+      raise SwiftException, "Unexpected StorageProvider Error #{e.message}"
+    end
+    unless @auth_uri_resp.response.code.to_i == 200
+      raise SwiftException, "Auth Failure: #{ @auth_uri_resp.body }"
+    end
+    @auth_uri_resp.headers
+  end
+
   def auth_token
     call_auth_uri['x-auth-token']
   end
@@ -65,7 +90,6 @@ class DdsSwift
       "#{storage_url}/#{container}/#{object}",
       headers: auth_header
     )
-    return if resp.response.code.to_i == 404
     ([200,204].include?(resp.response.code.to_i)) ||
       raise(SwiftException, resp.body)
      resp.headers
@@ -76,7 +100,6 @@ class DdsSwift
       "#{storage_url}/#{container}/#{object}?multipart-manifest=get",
       headers: auth_header
     )
-    return if resp.response.code.to_i == 404
     ([200,204].include?(resp.response.code.to_i)) ||
       raise(SwiftException, resp.body)
     resp.parsed_response
@@ -91,34 +114,8 @@ class DdsSwift
       "#{storage_url}#{path}",
       headers: auth_header
     )
-    return if resp.response.code.to_i == 404
     ([200,204].include?(resp.response.code.to_i)) ||
       raise(SwiftException, resp.body)
     resp.body
-  end
-
-  def root_path
-    root_path = ['',
-      ENV['SWIFT_PROVIDER_VERSION'],
-      ENV['SWIFT_PROVIDER_NAME']
-    ].join('/')
-  end
-
-  def call_auth_uri
-    begin
-      @auth_uri_resp ||= HTTParty.get(
-          "#{ENV['SWIFT_PROVIDER_URL_ROOT']}#{ENV['SWIFT_PROVIDER_AUTH_URI']}",
-          headers: {
-            'X-Auth-User' => ENV['SWIFT_USER'],
-            'X-Auth-Key' => ENV['SWIFT_PASS']
-          }
-      )
-    rescue Exception => e
-      raise SwiftException, "Unexpected StorageProvider Error #{e.message}"
-    end
-    unless @auth_uri_resp.response.code.to_i == 200
-      raise SwiftException, "Auth Failure: #{ @auth_uri_resp.body }"
-    end
-    @auth_uri_resp.headers
   end
 end
