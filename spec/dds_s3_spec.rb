@@ -35,6 +35,7 @@ describe DdsS3 do
     it { is_expected.to respond_to(:is_complete_multipart_upload?).with(2).arguments }
     it { is_expected.to respond_to(:head_object).with(2).arguments }
     it { is_expected.to respond_to(:delete_object).with(2).arguments }
+    it { is_expected.to respond_to(:put_object).with(3).arguments }
   end
 
   describe '#is_ready?' do
@@ -588,6 +589,39 @@ describe DdsS3 do
       end
 
       it { expect(subject).to be }
+
+      context 'when an unexpected S3 error is thrown' do
+        let(:expected_response) { 'Unexpected' }
+        it 'raises a S3Exception' do
+          expect { subject }.to raise_error(S3Exception)
+        end
+      end
+    end
+
+    describe '#put_object' do
+      let(:expected_object_data) { 'The Data' }
+      subject {
+        s3.put_object(
+          expected_bucket,
+          expected_object,
+          expected_object_data
+        )
+      }
+
+      let(:expected_response) {{
+        etag: expected_etag
+      }}
+      before(:example) do
+        s3.client.stub_responses(:put_object, expected_response)
+      end
+      after(:example) do
+        expect(s3.client.api_requests.first).not_to be_nil
+        expect(s3.client.api_requests.first[:params][:bucket]).to eq(expected_bucket)
+        expect(s3.client.api_requests.first[:params][:key]).to eq(expected_object)
+        expect(s3.client.api_requests.first[:params][:body]).to eq(expected_object_data)
+      end
+
+      it { expect(subject.etag).to eq(expected_etag) }
 
       context 'when an unexpected S3 error is thrown' do
         let(:expected_response) { 'Unexpected' }

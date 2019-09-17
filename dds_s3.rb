@@ -160,6 +160,18 @@ class DdsS3
     end
   end
 
+  def put_object(bucket, object, body)
+    begin
+      client.put_object(
+        bucket: bucket,
+        key: object,
+        body: body
+      )
+    rescue Aws::Errors::ServiceError => e
+      raise(S3Exception, e.message)
+    end
+  end
+
   private
 
   def put_bucket_cors(bucket_name)
