@@ -1,4 +1,6 @@
 require_relative '../swift_migration_manager'
+require 'logger'
+
 describe SwiftMigrationManager do
   shared_context 'mocked_s3' do
     let(:mocked_s3) { double(DdsS3) }
@@ -44,8 +46,11 @@ describe SwiftMigrationManager do
 
   let(:container) { SecureRandom.uuid }
   let(:object) { SecureRandom.uuid }
+  let(:logger) {
+    Logger.new(STDERR, level: 'Unknown')
+  }
   let(:swift_manager) {
-    SwiftMigrationManager.new(container, object, is_multipart_upload)
+    SwiftMigrationManager.new(logger, container, object, is_multipart_upload)
   }
 
   let(:first_part_hash) { SecureRandom.hex }
@@ -101,9 +106,15 @@ describe SwiftMigrationManager do
       }
     end
 
+    context 'without container' do
+      subject {
+        SwiftMigrationManager.new(logger)
+      }
+    end
+
     context 'without object' do
       subject {
-        SwiftMigrationManager.new(container)
+        SwiftMigrationManager.new(logger, container)
       }
       it {
         expect {
@@ -112,7 +123,7 @@ describe SwiftMigrationManager do
       }
     end
 
-    context 'with container, and object' do
+    context 'with logger, container, and object' do
       subject {
         swift_manager
       }

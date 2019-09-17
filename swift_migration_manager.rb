@@ -8,7 +8,8 @@ class SwiftMigrationManager
   # mainly for rspec introspection
   attr_reader :swift, :s3, :manifest, :multipart_upload, :existing_object_metadata
 
-  def initialize(container, object, is_multipart_upload=false)
+  def initialize(logger, container, object, is_multipart_upload=false)
+    @logger = logger
     @container = container
     @object = object
     @is_multipart_upload = is_multipart_upload
@@ -115,7 +116,7 @@ class SwiftMigrationManager
   def migrate_object
     return if is_multipart_upload? || is_migrated?
     if @existing_object_metadata
-      $stderr.puts "Something happened on previous upload, etag mismatch, will retry!"
+      @logger.error "Something happened on previous upload, etag mismatch, will retry!"
       @s3.delete_object(@container, @object)
     end
 
