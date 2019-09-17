@@ -10,5 +10,6 @@ gem 'activesupport', '~> 5.0'
 gem 'sneakers'
 gem 'bunny-mock'
 gem 'webmock'
+gem 'json'
 
 gem 'memory_profiler'
