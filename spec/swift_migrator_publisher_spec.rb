@@ -1,10 +1,11 @@
+ENV['TASK_QUEUE_PREFIX'] = 'task-queue-prefix'
 require_relative '../swift_migrator_publisher'
 require 'bunny-mock'
 require 'json'
 
 describe SwiftMigratorPublisher do
   let(:mocked_bunny) { BunnyMock.new }
-  let(:task_queue_prefix) { 'test' }
+  let(:task_queue_prefix) { 'task-queue-prefix' }
 
   subject {
     SwiftMigratorPublisher.new mocked_bunny
@@ -23,10 +24,6 @@ describe SwiftMigratorPublisher do
         is_multipart_upload: is_multipart_upload
       })
     }
-
-    before do
-      ENV['TASK_QUEUE_PREFIX'] = task_queue_prefix
-    end
 
     context 'is_multipart_upload false' do
       let(:is_multipart_upload) { false }
