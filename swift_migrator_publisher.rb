@@ -14,7 +14,7 @@ class SwiftMigratorPublisher
 
   def publish_object(container, object, is_multipart_upload)
     queue_name = ''
-    if is_multipart_upload
+    if is_multipart_upload.to_s == "true"
       queue_name = "#{ENV['TASK_QUEUE_PREFIX']}.multipart"
     else
       queue_name = "#{ENV['TASK_QUEUE_PREFIX']}.single"

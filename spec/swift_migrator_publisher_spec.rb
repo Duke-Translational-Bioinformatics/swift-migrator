@@ -26,7 +26,7 @@ describe SwiftMigratorPublisher do
     }
 
     context 'is_multipart_upload false' do
-      let(:is_multipart_upload) { false }
+      let(:is_multipart_upload) { "false" }
       let(:task_queue) {
         subject.channel.queue("#{ENV['TASK_QUEUE_PREFIX']}.single", durable: true)
       }
@@ -45,7 +45,7 @@ describe SwiftMigratorPublisher do
     end
 
     context 'is_multipart_upload true' do
-      let(:is_multipart_upload) { true }
+      let(:is_multipart_upload) { "true" }
       let(:task_queue) {
         subject.channel.queue("#{ENV['TASK_QUEUE_PREFIX']}.multipart", durable: true)
       }
