@@ -63,7 +63,7 @@ describe SwiftMigrationManager do
   let(:single_file_upload_hash) { SecureRandom.hex }
   let(:single_file_upload_s3_manifest) { false }
   let(:mocked_single_file_upload_manifest) {{
-    "hash" => single_file_upload_hash
+    "etag" => single_file_upload_hash
   }}
   let(:single_file_object_data) { 'The Data' }
 

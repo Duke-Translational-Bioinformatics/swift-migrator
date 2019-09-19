@@ -38,7 +38,7 @@ class SwiftMigrationManager
       @s3.is_complete_multipart_upload?(@container, @object)
     else
       if @existing_object_metadata
-        return @manifest["hash"] == @existing_object_metadata.etag.delete('""')
+        return @manifest["etag"] == @existing_object_metadata.etag.delete('""')
       else
         return false
       end
