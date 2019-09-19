@@ -33,7 +33,8 @@ class SwiftPartSubscriber
 
       if swift_migrator.all_parts_migrated?
         queue_name = queue.name.to_s.sub('parts','complete')
-        publish(message, routing_key: queue_name)
+        #publish did not work!
+        queue.channel.default_exchange.publish(message, routing_key: queue_name)
       end
     rescue Exception => e
       logger.error(e.message)

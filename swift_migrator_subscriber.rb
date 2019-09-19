@@ -27,10 +27,10 @@ class SwiftMigratorSubscriber
 
       if is_multipart_upload
         swift_migrator.process_manifest do |i|
-          $stderr.puts "received #{i}"
           object_info["part_number"] = i + 1
-          queue_name = "#{queue.name}.parts"
-          publish(JSON.dump(object_info), routing_key: queue_name)
+          queue_name = "#{ENV['TASK_QUEUE_PREFIX']}.#{ENV['TASK_UPLOAD_TYPE']}.parts"
+          #publish did not work!
+          queue.channel.default_exchange.publish(JSON.dump(object_info), routing_key: queue_name)
         end
       else
         migration_started = Time.now.to_i

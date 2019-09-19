@@ -17,6 +17,7 @@ describe SwiftMigratorSubscriber do
   it { is_expected.to respond_to(:work) }
 
   describe '#work' do
+    let(:mocked_amqp) { BunnyMock.new }
     let(:container) { SecureRandom.uuid }
     let(:object) { SecureRandom.uuid }
     let(:message_body) {{
@@ -29,7 +30,7 @@ describe SwiftMigratorSubscriber do
     let(:method) { subject.work(message) }
 
     before do
-      Sneakers.configure(connection: BunnyMock.new)
+      Sneakers.configure(connection: mocked_amqp)
       Sneakers.logger.level = Logger::ERROR
     end
 
@@ -108,13 +109,21 @@ describe SwiftMigratorSubscriber do
               message_body.merge({"part_number": expected_part_number})
             )
           }
-          let(:expected_part_queue) { "#{task_queue_prefix}.#{task_upload_type}.parts" }
+          let(:mocked_channel) {
+            mocked_amqp.channel
+          }
+          let(:expected_part_queue) {
+            "#{task_queue_prefix}.#{task_upload_type}.parts"
+          }
+
           before do
             expect(migration_manager).to receive(:process_manifest)
               .and_yield(expected_part_number-1)
           end
           it {
-            is_expected.to receive(:publish)
+            expect(subject.queue).to receive(:channel)
+              .and_return(mocked_channel)
+            expect(mocked_channel.default_exchange).to receive(:publish)
               .with(expected_part_message, routing_key: expected_part_queue)
             expect(expected_acknowledgement).not_to be_nil
             expect(method).to eq expected_acknowledgement

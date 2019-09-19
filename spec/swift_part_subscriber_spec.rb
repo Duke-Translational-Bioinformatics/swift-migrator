@@ -14,6 +14,7 @@ describe SwiftPartSubscriber do
   it { is_expected.to respond_to(:work) }
 
   describe '#work' do
+    let(:mocked_amqp) { BunnyMock.new }
     let(:container) { SecureRandom.uuid }
     let(:object) { SecureRandom.uuid }
     let(:is_multipart_upload) { true }
@@ -29,7 +30,7 @@ describe SwiftPartSubscriber do
     let(:method) { subject.work(message) }
 
     before do
-      Sneakers.configure(connection: BunnyMock.new)
+      Sneakers.configure(connection: mocked_amqp)
       Sneakers.logger.level = Logger::ERROR
     end
 
@@ -71,6 +72,9 @@ describe SwiftPartSubscriber do
 
       context 'successful report' do
         let(:expected_acknowledgement) { subject.ack! }
+        let(:mocked_channel) {
+          mocked_amqp.channel
+        }
 
         before do
           expect(migration_manager).to receive(:upload_part)
@@ -85,7 +89,9 @@ describe SwiftPartSubscriber do
           let(:expected_complete_queue) { "#{task_queue_prefix}.multipart.complete" }
           let(:all_parts_are_migrated) { true }
           it {
-            is_expected.to receive(:publish)
+            expect(subject.queue).to receive(:channel)
+              .and_return(mocked_channel)
+            expect(mocked_channel.default_exchange).to receive(:publish)
               .with(expected_complete_message, routing_key: expected_complete_queue)
             expect(expected_acknowledgement).not_to be_nil
             expect(method).to eq expected_acknowledgement
@@ -95,7 +101,7 @@ describe SwiftPartSubscriber do
         context 'all parts not yet migrated' do
           let(:all_parts_are_migrated) { false }
           it {
-            is_expected.not_to receive(:publish)
+            is_expected.not_to receive(:queue)
             expect(expected_acknowledgement).not_to be_nil
             expect(method).to eq expected_acknowledgement
           }
