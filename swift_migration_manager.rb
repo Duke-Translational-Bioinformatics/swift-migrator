@@ -120,13 +120,13 @@ class SwiftMigrationManager
       @s3.delete_object(@container, @object)
     end
 
-    @existing_object_metadata = s3.put_object(
+    @existing_object_metadata = @s3.put_object(
       @container,
       @object,
       @swift.get_object(@container,@object)
     )
     unless is_migrated?
-      s3.delete_object(@container, @object)
+      @s3.delete_object(@container, @object)
       raise(MigrationException, "Could not upload, etag mismatch!")
     end
   end
