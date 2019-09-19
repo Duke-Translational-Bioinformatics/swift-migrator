@@ -21,7 +21,7 @@ class SwiftMigrationManager
       @manifest = @swift.get_object_manifest(@container, @object)
       existing_multipart_uploads = @s3.existing_multipart_uploads(@container, @object)
       @multipart_upload = existing_multipart_uploads.uploads.select {|u|
-        u.key == object
+        u.key == @object
       }.first || @s3.create_multipart_upload(@container, @object)
     else
       @manifest = @swift.get_object_metadata(@container, @object)
