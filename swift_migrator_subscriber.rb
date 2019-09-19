@@ -64,6 +64,6 @@ if $0 == __FILE__
     :routing_key => ['#', 'something']
   )
   Sneakers.logger.level = Logger::INFO
-  r = Sneakers::Runner.new([ SwiftMigratorSubscriberr ])
+  r = Sneakers::Runner.new([ SwiftMigratorSubscriber ])
   r.run
 end
