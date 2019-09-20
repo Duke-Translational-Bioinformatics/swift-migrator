@@ -25,7 +25,6 @@ describe DdsSwift do
   describe 'interface' do
     subject { swift }
 
-    it { is_expected.to respond_to(:root_path) }
     it { is_expected.to respond_to(:auth_header) }
     it { is_expected.to respond_to(:call_auth_uri) }
     it { is_expected.to respond_to(:auth_token) }
@@ -38,12 +37,6 @@ describe DdsSwift do
     it { is_expected.to respond_to(:get_object_manifest).with(2).arguments }
     it { is_expected.to respond_to(:get_object).with(2).arguments }
     it { is_expected.to respond_to(:get_data).with(1).arguments }
-  end
-
-  describe '#root_path' do
-    subject { swift.root_path }
-    let(:expected_root_path) { "/#{swift_provider_version}/#{swift_provider_name}" }
-    it { is_expected.to eq(expected_root_path) }
   end
 
   describe 'swift API' do

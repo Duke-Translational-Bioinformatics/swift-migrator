@@ -5,13 +5,6 @@ class SwiftException < StandardError
 end
 
 class DdsSwift
-  def root_path
-    root_path = ['',
-      ENV['SWIFT_PROVIDER_VERSION'],
-      ENV['SWIFT_PROVIDER_NAME']
-    ].join('/')
-  end
-
   def call_auth_uri
     begin
       @auth_uri_resp ||= HTTParty.get(

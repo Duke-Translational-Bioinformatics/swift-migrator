@@ -1,0 +1,58 @@
+stages:
+  - build
+  - test
+  - scan
+  - publish
+  - deployment
+
+variables:
+  LOG_LEVEL: "info"
+  CANDIDATE_IMAGE: "${CI_PROJECT_NAME}:${CI_COMMIT_SHORT_SHA}"
+
+include:
+  - project: 'utility/images/image-scanner'
+    file: '/image-scanner.yml'
+  - project: 'ori-rad/ci-pipeline-utilities/deployment'
+    file: '/deployment.yml'
+
+build:
+  stage: build_candidate
+  before_script:
+    - export THE_IMAGE="${CI_REGISTRY_IMAGE}/${CANDIDATE_IMAGE}"
+    - export THE_DOCKERFILE="Dockerfile"
+    - export BUILD_ARGS="--build-arg CI_COMMIT_SHA --build-arg CI_PROJECT_URL"
+  extends: .kaniko_build
+  only:
+    - branches
+
+rspec:
+  stage: test
+  image: ${CI_REGISTRY_IMAGE}/${CANDIDATE_IMAGE}
+  # by default, gitlab ci clones your code out into a build directory
+  # that needs to then be initialized with bundler.
+  # Since we are testing a candidate image that already has the required gems
+  # installed with bundle install, we do not need to clone into the build directory.
+  # Instead, we need to change into the APP_PATH for the image before we run the
+  # tests
+  script:
+    - cd ${APP_PATH}
+    - rspec
+  only:
+    - branches
+  tags:
+    - docker
+
+clean_candidate_ci:
+  stage: cleanup
+  variables:
+    DELETE_FROM_REPO: "${CI_PROJECT_NAME}-ci"
+    DELETE_IMAGE_TAG: ${CI_COMMIT_SHORT_SHA}
+  extends: .cleanup_repo_image
+  only:
+    - branches
+
+scan:
+  stage: scan
+  extends: .scan
+  only:
+    - branches
