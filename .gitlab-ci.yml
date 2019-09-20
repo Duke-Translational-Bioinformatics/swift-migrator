@@ -4,9 +4,12 @@ stages:
   - scan
   - deploy
 
+# this does not deploy a deployment with the standard deployment name, so
+# override WATCH_DEPLOYMENT with a deployment that is deployed
 variables:
   LOG_LEVEL: "info"
   CANDIDATE_IMAGE: "${CI_PROJECT_NAME}:${CI_COMMIT_SHORT_SHA}"
+  WATCH_DEPLOYMENT: "${CI_ENVIRONMENT_SLUG}-${CI_PROJECT_NAME}-single"
 
 include:
   - project: 'utility/images/image-scanner'
