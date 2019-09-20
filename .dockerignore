@@ -1,0 +1,10 @@
+.git
+.ci
+.bundle
+*nocommit*
+.bash_history
+.rspec
+.gitlab-ci.yml
+.dockerignore
+.gitignore
+Dockerfile

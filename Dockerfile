@@ -13,7 +13,6 @@ RUN apt-get update -qq \
       jq \
     && rm -rf /var/lib/apt/lists/*
 
-
 ENV APP_PATH /opt/app-root/src
 ENV HOME ${APP_PATH}
 WORKDIR ${APP_PATH}
