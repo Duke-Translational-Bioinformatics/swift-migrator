@@ -2,7 +2,6 @@ stages:
   - build
   - test
   - scan
-  - publish
   - deployment
 
 variables:
@@ -49,3 +48,28 @@ scan:
   extends: .scan
   only:
     - branches
+
+uatest:
+  stage: deploy
+  extends: .deploy
+  environment:
+    name: uatest
+    on_stop: decommission_uatest
+  only:
+    refs:
+      - master
+    variables:
+      - $HELM_TOKEN
+
+decommission_uatest:
+  stage: deploy
+  extends: .decommission
+  environment:
+    name: uatest
+    action: stop
+  when: manual
+  only:
+    refs:
+      - master
+    variables:
+      - $HELM_TOKEN
