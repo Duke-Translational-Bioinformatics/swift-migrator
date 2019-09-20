@@ -18,7 +18,7 @@ include:
     file: '/docker.yml'
 
 build:
-  stage: build_candidate
+  stage: build
   before_script:
     - export THE_IMAGE="${CI_REGISTRY_IMAGE}/${CANDIDATE_IMAGE}"
     - export THE_DOCKERFILE="Dockerfile"
@@ -43,15 +43,6 @@ rspec:
     - branches
   tags:
     - docker
-
-clean_candidate_ci:
-  stage: cleanup
-  variables:
-    DELETE_FROM_REPO: "${CI_PROJECT_NAME}-ci"
-    DELETE_IMAGE_TAG: ${CI_COMMIT_SHORT_SHA}
-  extends: .cleanup_repo_image
-  only:
-    - branches
 
 scan:
   stage: scan
