@@ -3,7 +3,7 @@ data:
   .dockerconfigjson: {{ template "imagePullSecret" . }}
 kind: Secret
 metadata:
-  name: {{ template "fullName" . }}-pull
+  name: {{ include "swift-migrator.fullname" . }}-pull
   labels:
     app: {{ .Chart.Name }}
     environment: {{ .Values.environment }}
