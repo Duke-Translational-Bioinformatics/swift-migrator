@@ -14,6 +14,8 @@ include:
     file: '/image-scanner.yml'
   - project: 'ori-rad/ci-pipeline-utilities/deployment'
     file: '/deployment.yml'
+  - project: 'utility/project-templates/ci-templates'
+    file: '/docker.yml'
 
 build:
   stage: build_candidate
