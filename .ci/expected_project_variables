@@ -7,11 +7,11 @@ SCAN_SERVICE_URL: url to the DHTS twistlock scanning service
 HELM_USER: provided by DHTS when a Kubernetes project is created
 HELM_TOKEN: provided by DHTS when a Kubernetes project is created
 AMQP_URL: amqp url to rabbitmq
-SWIFT_USER: user with read access to the DDS swift service
-SWIFT_PASS: password for SWIFT_USER
-SWIFT_PROVIDER_URL_ROOT: base url to swift service
-SWIFT_PROVIDER_AUTH_URI: auth path appended to SWIFT_PROVIDER_URL_ROOT for authentication to swift
-S3_USER: user with read/write access to the DDS S3 service
-S3_PASS: password for S3_USER
-S3_PROVIDER_URL_ROOT: base url to s3 service
+SWIFT__USER: user with read access to the DDS swift service
+SWIFT__PASS: password for SWIFT_USER
+SWIFT__PROVIDER_URL_ROOT: base url to swift service
+SWIFT__PROVIDER_AUTH_URI: auth path appended to SWIFT_PROVIDER_URL_ROOT for authentication to swift
+S3__USER: user with read/write access to the DDS S3 service
+S3__PASS: password for S3_USER
+S3__PROVIDER_URL_ROOT: base url to s3 service
 TASK_QUEUE_PREFIX: prefix to append to names of all queues/exchanges
