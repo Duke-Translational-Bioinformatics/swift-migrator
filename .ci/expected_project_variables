@@ -15,3 +15,4 @@ S3__USER: user with read/write access to the DDS S3 service
 S3__PASS: password for S3_USER
 S3__PROVIDER_URL_ROOT: base url to s3 service
 TASK_QUEUE_PREFIX: prefix to append to names of all queues/exchanges
+PROJECT_SPECIFIC_DEPLOY_ARGS: AMQP_URL SWIFT__USER SWIFT__PASS SWIFT__PROVIDER_URL_ROOT SWIFT__PROVIDER_AUTH_URI S3__USER S3__PASS S3__PROVIDER_URL_ROOT TASK_QUEUE_PREFIX
