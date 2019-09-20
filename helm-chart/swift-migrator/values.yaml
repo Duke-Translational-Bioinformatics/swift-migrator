@@ -1,0 +1,47 @@
+# Default values for authentication-service.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+version: CI_COMMIT_REF_SLUG
+environment: CI_ENVIRONMENT_NAME
+git_commit: CI_COMMIT_SHA
+git_tag: CI_COMMIT_REF_SLUG
+amqp_url: AMQP_URL
+task_queue_prefix: CI_ENVIRONMENT_NAME
+
+swift:
+  user: SWIFT__USER
+  pass: SWIFT__PASS
+  provider_url_root: SWIFT__PROVIDER_URL_ROOT
+  provider_auth_uri: SWIFT__PROVIDER_AUTH_URI
+
+s3:
+  user: S3__USER
+  pass: S3__PASS
+  provider_url_root: S3__PROVIDER_URL_ROOT
+
+application:
+  multipart:
+    migrator:
+      replicaCount: 1
+    part:
+      replicaCount: 1
+    complete:
+      replicaCount: 1
+  single:
+    migrator:
+      replicaCount: 1
+
+
+# the registry information used to create the image pull secret
+registry:
+  root: CI_REGISTRY
+  secret:
+    username: CI_DEPLOY_USER
+    password: CI_DEPLOY_PASS
+
+# the docker container image
+image:
+  repository: CI_REGISTRY_IMAGE/CI_PROJECT_NAME
+  tag: CI_COMMIT_REF_SLUG
+  pullPolicy: Always

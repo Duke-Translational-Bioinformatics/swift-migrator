@@ -1,0 +1,40 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "swift-migrator.fullname" . }}-single-migrator
+  labels:
+    app: {{ .Chart.Name }}
+    environment: {{ .Values.environment }}
+    version: {{ .Values.version }}
+    git_commit: {{ .Values.git_commit }}
+    git_tag: {{ .Values.git_tag }}
+spec:
+  replicas: {{ .Values.application.single.migrator.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+      environment: {{ .Values.environment }}
+  # This is the pod template
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+        environment: {{ .Values.environment }}
+        version: {{ .Values.version }}
+        git_commit: {{ .Values.git_commit }}
+    spec:
+      containers:
+        - name: {{ include "swift-migrator.fullname" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /opt/app-root/src/swift_migrator_subscriber.rb
+          env:
+            - name: TASK_UPLOAD_TYPE
+              value: single
+          envFrom:
+            - secretRef:
+                name: {{ include "swift-migrator.fullname" . }}-secret-environment
+      imagePullSecrets:
+        - name: {{ include "swift-migrator.fullname" . }}-pull
