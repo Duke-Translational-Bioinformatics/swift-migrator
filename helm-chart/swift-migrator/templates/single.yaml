@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "swift-migrator.fullname" . }}-single-migrator
+  name: {{ include "swift-migrator.fullname" . }}-single
   labels:
     app: {{ .Chart.Name }}
     environment: {{ .Values.environment }}

@@ -3,7 +3,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "swift-migrator.fullname" . }}-multipart-migrator
+  name: {{ include "swift-migrator.fullname" . }}-multipart
   labels:
     app: {{ .Chart.Name }}
     environment: {{ .Values.environment }}
