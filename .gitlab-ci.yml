@@ -2,7 +2,7 @@ stages:
   - build
   - test
   - scan
-  - deployment
+  - deploy
 
 variables:
   LOG_LEVEL: "info"
