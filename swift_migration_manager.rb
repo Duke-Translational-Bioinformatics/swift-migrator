@@ -89,6 +89,7 @@ class SwiftMigrationManager
       @multipart_upload.upload_id,
       @swift.get_data(chunk_summary["name"])
     )
+    GC.start
     etag = resp.etag.delete('"')
     unless @manifest[manifest_index]["hash"] == etag
       raise(MigrationException, "Could not upload part #{part_number}: hash mismatch!")
@@ -125,6 +126,7 @@ class SwiftMigrationManager
       @object,
       @swift.get_object(@container,@object)
     )
+    GC.start
     unless is_migrated?
       @s3.delete_object(@container, @object)
       raise(MigrationException, "Could not upload, etag mismatch!")
