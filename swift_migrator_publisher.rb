@@ -28,10 +28,13 @@ class SwiftMigratorPublisher
   end
 
   def publish_objects_from(io)
+    published_messages = 0
     while (object_input = io.gets)
       this_container, this_object, this_is_multipart_upload = object_input.chomp.split(',')
       publish_object(this_container, this_object, this_is_multipart_upload)
+      published_messages += 1
     end
+    $stderr.puts "#{published_messages} messages published"
   end
 
   private
@@ -60,10 +63,7 @@ end
 if $0 == __FILE__
   input_file = ARGV.shift or die usage
   die usage unless(ENV['AMQP_URL'] && ENV['TASK_QUEUE_PREFIX'])
-  published_messages = 0
   File.open(input_file, 'r') do |object_input_io|
     SwiftMigratorPublisher.new.publish_objects_from object_input_io
-    published_messages += 1
   end
-  $stderr.puts "#{published_messages} messages published"
 end
