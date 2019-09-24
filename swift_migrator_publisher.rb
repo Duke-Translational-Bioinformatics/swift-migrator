@@ -60,8 +60,10 @@ end
 if $0 == __FILE__
   input_file = ARGV.shift or die usage
   die usage unless(ENV['AMQP_URL'] && ENV['TASK_QUEUE_PREFIX'])
+  published_messages = 0
   File.open(input_file, 'r') do |object_input_io|
     SwiftMigratorPublisher.new.publish_objects_from object_input_io
+    published_messages += 1
   end
-  $stderr.puts "all published"
+  $stderr.puts "#{published_messages} messages published"
 end
