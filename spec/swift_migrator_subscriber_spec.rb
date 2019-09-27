@@ -17,6 +17,7 @@ describe SwiftMigratorSubscriber do
   it { is_expected.to respond_to(:work) }
 
   describe '#work' do
+    let(:mocked_metrics) { double(MetricPublisher) }
     let(:mocked_amqp) { BunnyMock.new }
     let(:container) { SecureRandom.uuid }
     let(:object) { SecureRandom.uuid }
@@ -32,6 +33,8 @@ describe SwiftMigratorSubscriber do
     before do
       Sneakers.configure(connection: mocked_amqp)
       Sneakers.logger.level = Logger::ERROR
+      expect(MetricPublisher).to receive(:new)
+        .and_return(mocked_metrics)
     end
 
     context 'JSON parse exception' do
@@ -81,6 +84,11 @@ describe SwiftMigratorSubscriber do
         context 'successful report' do
           let(:expected_acknowledgement) { subject.ack! }
           let(:migration_method_response) { nil }
+          before do
+            expect(mocked_metrics).to receive(:publish)
+              .with("single_subscriber", "object_migrated", 1)
+              .and_return(true)
+          end
           it {
             expect(expected_acknowledgement).not_to be_nil
             expect(method).to eq expected_acknowledgement
@@ -91,6 +99,9 @@ describe SwiftMigratorSubscriber do
           let(:expected_error) { MigrationException }
           let(:expected_acknowledgement) { subject.reject! }
           let(:migration_method_response) { raise(expected_error) }
+          before do
+            expect(mocked_metrics).not_to receive(:publish)
+          end
           it {
             expect(expected_acknowledgement).not_to be_nil
             expect(method).to eq expected_acknowledgement
@@ -119,6 +130,9 @@ describe SwiftMigratorSubscriber do
           before do
             expect(migration_manager).to receive(:process_manifest)
               .and_yield(expected_part_number-1)
+            expect(mocked_metrics).to receive(:publish)
+              .with("multipart_subscriber", "part_queued", 1)
+              .and_return(true)
           end
           it {
             expect(subject.queue).to receive(:channel)
@@ -135,6 +149,7 @@ describe SwiftMigratorSubscriber do
           before do
             expect(migration_manager).to receive(:process_manifest)
               .and_raise(Exception)
+            expect(mocked_metrics).not_to receive(:publish)
           end
           it {
             expect(expected_acknowledgement).not_to be_nil

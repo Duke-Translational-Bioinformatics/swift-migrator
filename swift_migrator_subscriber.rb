@@ -4,6 +4,7 @@ require 'sneakers/runner'
 require 'sneakers/handlers/maxretry'
 require 'logger'
 require 'json'
+require_relative 'metric_publisher'
 
 class SwiftMigratorSubscriber
   require_relative 'swift_migration_manager'
@@ -16,7 +17,7 @@ class SwiftMigratorSubscriber
     }
 
   def work(message)
-    logger.info("processing message: #{message}")
+    @metrics = MetricPublisher.new
     has_error = false
     begin
       object_info = JSON.parse(message)
@@ -31,12 +32,14 @@ class SwiftMigratorSubscriber
           queue_name = "#{ENV['TASK_QUEUE_PREFIX']}.#{ENV['TASK_UPLOAD_TYPE']}.parts"
           #publish did not work!
           queue.channel.default_exchange.publish(JSON.dump(object_info), routing_key: queue_name)
+          @metrics.publish("multipart_subscriber", "part_queued", 1)
         end
       else
         migration_started = Time.now.to_i
         swift_migrator.migrate_object
         migration_time = Time.now.to_i - migration_started
         logger.info("object migrated in #{migration_time} seconds!")
+        @metrics.publish("single_subscriber", "object_migrated", 1)
       end
     rescue Exception => e
       logger.error(e.message)
