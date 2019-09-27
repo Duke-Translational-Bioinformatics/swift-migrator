@@ -1,0 +1,44 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "swift-migrator.fullname" . }}-pushgateway
+  labels:
+    app: {{ include "swift-migrator.fullname" . }}-pushgateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "swift-migrator.fullname" . }}-pushgateway
+  # This is the pod template
+  template:
+    metadata:
+      labels:
+        app: {{ include "swift-migrator.fullname" . }}-pushgateway
+    spec:
+      containers:
+        - name: {{ include "swift-migrator.fullname" . }}-pushgateway
+          image: prom/pushgateway
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9091
+              name: gateway-port
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pushgateway
+  labels:
+    app: {{ include "swift-migrator.fullname" . }}-pushgateway
+  annotations:
+    ori.monitoring.io/service_should_be_scraped: "true"
+    ori.monitoring.io/metric_path: "/metrics"
+    ori.monitoring.io/scrape_port: "9091"
+spec:
+  ports:
+    - name: gateway-port
+      port: 9091
+      protocol: TCP
+      targetPort: 9091
+  selector:
+      app: {{ include "swift-migrator.fullname" . }}-pushgateway
