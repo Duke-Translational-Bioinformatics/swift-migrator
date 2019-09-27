@@ -3,6 +3,7 @@
 class SwiftMigratorPublisher
   require "bunny"
   require 'json'
+  require_relative 'metric_publisher'
 
   attr_accessor :connection, :channel, :exchange
   def initialize(connection=nil)
@@ -10,21 +11,27 @@ class SwiftMigratorPublisher
       @connection = connection
     end
     connect
+    @metrics = MetricPublisher.new
   end
 
   def publish_object(container, object, is_multipart_upload)
-    queue_name = ''
+    job_type = ''
     if is_multipart_upload.to_s == "true"
-      queue_name = "#{ENV['TASK_QUEUE_PREFIX']}.multipart"
+      job_type = 'multipart'
     else
-      queue_name = "#{ENV['TASK_QUEUE_PREFIX']}.single"
+      job_type = "single"
     end
+    queue_name = "#{ENV['TASK_QUEUE_PREFIX']}.#{job_type}"
+    job_name = "#{job_type}_publisher"
     message = JSON.dump({
       container: container,
       object: object,
       is_multipart_upload: is_multipart_upload
     })
     @exchange.publish(message, routing_key: queue_name)
+    unless @metrics.publish(job_name, 'objects_queued', 1)
+      $stderr.puts "metric not published!"
+    end
   end
 
   def publish_objects_from(io)

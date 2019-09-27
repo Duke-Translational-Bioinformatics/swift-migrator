@@ -5,6 +5,7 @@ require 'json'
 
 describe SwiftMigratorPublisher do
   let(:mocked_bunny) { BunnyMock.new }
+  let(:mocked_metrics) { double(MetricPublisher) }
   let(:task_queue_prefix) { 'task-queue-prefix' }
 
   subject {
@@ -17,6 +18,9 @@ describe SwiftMigratorPublisher do
   describe '#publish_object' do
     let(:container_to_publish) { 'container-to-publish' }
     let(:object_to_publish) { 'object-to-publish' }
+    let(:expected_metric_name) { 'objects_queued' }
+    let(:expected_metric_value) { 1 }
+
     let(:expected_message) {
       JSON.dump({
         container: container_to_publish,
@@ -25,8 +29,16 @@ describe SwiftMigratorPublisher do
       })
     }
 
+    before do
+      expect(MetricPublisher).to receive(:new)
+        .and_return(mocked_metrics)
+      expect(mocked_metrics).to receive(:publish)
+        .with(expected_metric_job, expected_metric_name, expected_metric_value)
+        .and_return(true)
+    end
     context 'is_multipart_upload false' do
       let(:is_multipart_upload) { "false" }
+      let(:expected_metric_job) { "single_publisher" }
       let(:task_queue) {
         subject.channel.queue("#{ENV['TASK_QUEUE_PREFIX']}.single", durable: true)
       }
@@ -46,6 +58,7 @@ describe SwiftMigratorPublisher do
 
     context 'is_multipart_upload true' do
       let(:is_multipart_upload) { "true" }
+      let(:expected_metric_job) { "multipart_publisher" }
       let(:task_queue) {
         subject.channel.queue("#{ENV['TASK_QUEUE_PREFIX']}.multipart", durable: true)
       }
