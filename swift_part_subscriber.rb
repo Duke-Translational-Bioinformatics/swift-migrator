@@ -4,6 +4,7 @@ require 'sneakers/runner'
 require 'sneakers/handlers/maxretry'
 require 'logger'
 require 'json'
+require_relative 'metric_publisher'
 
 class SwiftPartSubscriber
   require_relative 'swift_migration_manager'
@@ -16,7 +17,7 @@ class SwiftPartSubscriber
     }
 
   def work(message)
-    logger.info("processing message: #{message}")
+    @metrics = MetricPublisher.new
     has_error = false
     begin
       object_info = JSON.parse(message)
@@ -30,11 +31,13 @@ class SwiftPartSubscriber
       swift_migrator.upload_part(part_number)
       migration_time = Time.now.to_i - migration_started
       logger.info("part migrated in #{migration_time} seconds!")
+      @metrics.publish("part_subscriber", "part_migrated", 1)
 
       if swift_migrator.all_parts_migrated?
         queue_name = queue.name.to_s.sub('parts','complete')
         #publish did not work!
         queue.channel.default_exchange.publish(message, routing_key: queue_name)
+        @metrics.publish("part_subscriber", "completion_queued", 1)
       end
     rescue Exception => e
       logger.error(e.message)

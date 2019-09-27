@@ -15,6 +15,7 @@ describe SwiftPartSubscriber do
 
   describe '#work' do
     let(:mocked_amqp) { BunnyMock.new }
+    let(:mocked_metrics) { double(MetricPublisher) }
     let(:container) { SecureRandom.uuid }
     let(:object) { SecureRandom.uuid }
     let(:is_multipart_upload) { true }
@@ -68,6 +69,8 @@ describe SwiftPartSubscriber do
             object,
             is_multipart_upload
           ).and_return(migration_manager)
+        expect(MetricPublisher).to receive(:new)
+          .and_return(mocked_metrics)
       end
 
       context 'successful report' do
@@ -81,6 +84,9 @@ describe SwiftPartSubscriber do
             .with(part_number)
           expect(migration_manager).to receive(:all_parts_migrated?)
             .and_return(all_parts_are_migrated)
+          expect(mocked_metrics).to receive(:publish)
+            .with("part_subscriber", "part_migrated", 1)
+            .and_return(true)
         end
         context 'all parts migrated' do
           let(:expected_complete_message) {
@@ -88,11 +94,16 @@ describe SwiftPartSubscriber do
           }
           let(:expected_complete_queue) { "#{task_queue_prefix}.multipart.complete" }
           let(:all_parts_are_migrated) { true }
+          before do
+          end
           it {
             expect(subject.queue).to receive(:channel)
               .and_return(mocked_channel)
             expect(mocked_channel.default_exchange).to receive(:publish)
               .with(expected_complete_message, routing_key: expected_complete_queue)
+            expect(mocked_metrics).to receive(:publish)
+              .with("part_subscriber", "completion_queued", 1)
+              .and_return(true)
             expect(expected_acknowledgement).not_to be_nil
             expect(method).to eq expected_acknowledgement
           }
@@ -114,6 +125,7 @@ describe SwiftPartSubscriber do
           expect(migration_manager).to receive(:upload_part)
             .with(part_number)
             .and_raise(Exception)
+          expect(mocked_metrics).not_to receive(:publish)
         end
         it {
           expect(expected_acknowledgement).not_to be_nil
