@@ -4,6 +4,7 @@ require 'sneakers/runner'
 require 'sneakers/handlers/maxretry'
 require 'logger'
 require 'json'
+require_relative 'metric_publisher'
 
 class SwiftCompleteSubscriber
   require_relative 'swift_migration_manager'
@@ -16,6 +17,7 @@ class SwiftCompleteSubscriber
     }
 
   def work(message)
+    @metrics = MetricPublisher.new
     logger.info("processing message: #{message}")
     has_error = false
     begin
@@ -25,6 +27,7 @@ class SwiftCompleteSubscriber
       is_multipart_upload = object_info["is_multipart_upload"].downcase == "true"
       swift_migrator = SwiftMigrationManager.new(logger, container, object, is_multipart_upload)
       swift_migrator.complete_migration
+      @metrics.publish("complete_subscriber", "object_migrated", 1)
     rescue Exception => e
       logger.error(e.message)
       has_error = true

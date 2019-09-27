@@ -14,6 +14,7 @@ describe SwiftCompleteSubscriber do
   it { is_expected.to respond_to(:work) }
 
   describe '#work' do
+    let(:mocked_metrics) { double(MetricPublisher) }
     let(:container) { SecureRandom.uuid }
     let(:object) { SecureRandom.uuid }
     let(:is_multipart_upload) { true }
@@ -31,6 +32,8 @@ describe SwiftCompleteSubscriber do
     before do
       Sneakers.configure(connection: BunnyMock.new)
       Sneakers.logger.level = Logger::ERROR
+      expect(MetricPublisher).to receive(:new)
+        .and_return(mocked_metrics)
     end
 
     context 'JSON parse exception' do
@@ -74,6 +77,8 @@ describe SwiftCompleteSubscriber do
 
         before do
           expect(migration_manager).to receive(:complete_migration)
+          expect(mocked_metrics).to receive(:publish)
+            .with("complete_subscriber", "object_migrated", 1)
         end
         it {
           expect(expected_acknowledgement).not_to be_nil
@@ -86,6 +91,7 @@ describe SwiftCompleteSubscriber do
         before do
           expect(migration_manager).to receive(:complete_migration)
             .and_raise(Exception)
+            expect(mocked_metrics).not_to receive(:publish)
         end
         it {
           expect(expected_acknowledgement).not_to be_nil
