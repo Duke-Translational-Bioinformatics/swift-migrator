@@ -5,7 +5,7 @@ gem 'aws-sdk'
 
 gem 'rspec'
 
-gem 'activesupport', '~> 5.0'
+gem 'activesupport', '~> 6.1'
 
 gem 'sneakers'
 gem 'bunny-mock'
